@@ -7,39 +7,41 @@ spec:
   clusterNetwork:
     pods:
       cidrBlocks:
-        - 192.168.0.0/16
+      - 10.244.0.0/16
     serviceDomain: cluster.local
     services:
       cidrBlocks:
-        - 10.128.0.0/12
+      - 10.96.0.0/12
   controlPlaneRef:
     apiVersion: controlplane.cluster.x-k8s.io/v1beta1
     kind: KubeadmControlPlane
     name: {{ .Values.cluster.name }}-control-plane
-    namespace: default
   infrastructureRef:
     apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
-    kind: DockerCluster
+    kind: KKCluster
     name: {{ .Values.cluster.name }}
-    namespace: default
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
-kind: DockerCluster
+kind: KKCluster
 metadata:
   name: {{ .Values.cluster.name }}
   namespace: default
----
-apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
-kind: DockerMachineTemplate
-metadata:
-  name: {{ .Values.cluster.name }}-control-plane
-  namespace: default
 spec:
-  template:
-    spec:
-      extraMounts:
-        - containerPath: /var/run/docker.sock
-          hostPath: /var/run/docker.sock
+  component:
+    zone: /home/ubuntu
+  controlPlaneLoadBalancer:
+    host: 10.2.0.4
+  nodes:
+    auth:
+      password: "%Va280141234"
+      user: alex
+    instances:
+    - address: 20.4.209.70
+      roles:
+      - control-plane
+    - address: 20.107.108.191
+      roles:
+      - worker
 ---
 apiVersion: controlplane.cluster.x-k8s.io/v1beta1
 kind: KubeadmControlPlane
@@ -48,43 +50,139 @@ metadata:
   namespace: default
 spec:
   kubeadmConfigSpec:
-    clusterConfiguration:
-      apiServer:
-        certSANs:
-          - localhost
-          - 127.0.0.1
-      controllerManager:
-        extraArgs:
-          enable-hostpath-provisioner: "true"
+    files:
+    - content: |
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          creationTimestamp: null
+          name: kube-vip
+          namespace: kube-system
+        spec:
+          containers:
+          - args:
+            - manager
+            env:
+            - name: address
+              value: "10.2.0.4"
+            - name: vip_interface
+              value: ""
+            - name: vip_arp
+              value: "true"
+            - name: port
+              value: "6443"
+            - name: vip_cidr
+              value: "32"
+            - name: cp_enable
+              value: "true"
+            - name: cp_namespace
+              value: kube-system
+            - name: vip_ddns
+              value: "false"
+            - name: svc_enable
+              value: "true"
+            - name: vip_leaderelection
+              value: "true"
+            - name: vip_leaseduration
+              value: "5"
+            - name: vip_renewdeadline
+              value: "3"
+            - name: vip_retryperiod
+              value: "1"
+            - name: lb_enable
+              value: "true"
+            - name: lb_port
+              value: "6443"
+            image: ghcr.io/kube-vip/kube-vip:v0.5.0
+            imagePullPolicy: IfNotPresent
+            name: kube-vip
+            resources: {}
+            securityContext:
+              capabilities:
+                add:
+                - NET_ADMIN
+                - NET_RAW
+            volumeMounts:
+            - mountPath: /etc/kubernetes/admin.conf
+              name: kubeconfig
+          hostNetwork: true
+          hostAliases:
+            - hostnames:
+                - kubernetes
+              ip: 127.0.0.1
+          volumes:
+          - hostPath:
+              path: /etc/kubernetes/admin.conf
+              type: FileOrCreate
+            name: kubeconfig
+        status: {}
+      owner: root:root
+      path: /etc/kubernetes/manifests/kube-vip.yaml
     initConfiguration:
       nodeRegistration:
-        criSocket: /var/run/containerd/containerd.sock
-        kubeletExtraArgs:
-          cgroup-driver: cgroupfs
-          eviction-hard: nodefs.available<0%,nodefs.inodesFree<0%,imagefs.available<0%
+        criSocket: unix:///var/run/containerd/containerd.sock
     joinConfiguration:
       nodeRegistration:
-        criSocket: /var/run/containerd/containerd.sock
-        kubeletExtraArgs:
-          cgroup-driver: cgroupfs
-          eviction-hard: nodefs.available<0%,nodefs.inodesFree<0%,imagefs.available<0%
+        criSocket: unix:///var/run/containerd/containerd.sock
   machineTemplate:
     infrastructureRef:
       apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
-      kind: DockerMachineTemplate
+      kind: KKMachineTemplate
       name: {{ .Values.cluster.name }}-control-plane
-      namespace: default
   replicas: {{ .Values.cluster.masterNodes }}
   version: {{ .Values.cluster.version }}
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
-kind: DockerMachineTemplate
+kind: KKMachineTemplate
+metadata:
+  name: {{ .Values.cluster.name }}-control-plane
+  namespace: default
+spec:
+  template:
+    spec:
+      repository:
+        iso: none
+        update: false
+      roles:
+      - control-plane
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachineDeployment
+metadata:
+  name: {{ .Values.cluster.name }}-md-0
+  namespace: default
+spec:
+  clusterName: {{ .Values.cluster.name }}
+  replicas: {{ .Values.cluster.workerNodes }
+  selector:
+    matchLabels: null
+  template:
+    spec:
+      bootstrap:
+        configRef:
+          apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+          kind: KubeadmConfigTemplate
+          name: {{ .Values.cluster.name }}-md-0
+      clusterName: {{ .Values.cluster.name }}
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+        kind: KKMachineTemplate
+        name: {{ .Values.cluster.name }}-md-0
+      version: {{ .Values.cluster.version }}
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: KKMachineTemplate
 metadata:
   name: {{ .Values.cluster.name }}-md-0
   namespace: default
 spec:
   template:
-    spec: {}
+    spec:
+      repository:
+        iso: none
+        update: false
+      roles:
+      - worker
 ---
 apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
 kind: KubeadmConfigTemplate
@@ -96,32 +194,4 @@ spec:
     spec:
       joinConfiguration:
         nodeRegistration:
-          kubeletExtraArgs:
-            cgroup-driver: cgroupfs
-            eviction-hard: nodefs.available<0%,nodefs.inodesFree<0%,imagefs.available<0%
----
-apiVersion: cluster.x-k8s.io/v1beta1
-kind: MachineDeployment
-metadata:
-  name: {{ .Values.cluster.name }}-md-0
-  namespace: default
-spec:
-  clusterName: {{ .Values.cluster.name }}
-  replicas: {{ .Values.cluster.workerNodes }}
-  selector:
-    matchLabels: null
-  template:
-    spec:
-      bootstrap:
-        configRef:
-          apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
-          kind: KubeadmConfigTemplate
-          name: {{ .Values.cluster.name }}-md-0
-          namespace: default
-      clusterName: {{ .Values.cluster.name }}
-      infrastructureRef:
-        apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
-        kind: DockerMachineTemplate
-        name: {{ .Values.cluster.name }}-md-0
-        namespace: default
-      version: {{ .Values.cluster.version }}
+          criSocket: unix:///var/run/containerd/containerd.sock
