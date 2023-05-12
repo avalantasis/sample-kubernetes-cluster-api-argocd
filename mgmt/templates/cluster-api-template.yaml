@@ -1,7 +1,7 @@
 apiVersion: cluster.x-k8s.io/v1beta1
 kind: Cluster
 metadata:
-  name: {{ .Values.cluster.name }}
+  name: capi-cluster2
   namespace: default
 spec:
   clusterNetwork:
@@ -15,16 +15,16 @@ spec:
   controlPlaneRef:
     apiVersion: controlplane.cluster.x-k8s.io/v1beta1
     kind: KubeadmControlPlane
-    name: {{ .Values.cluster.name }}-control-plane
+    name: capi-cluster2-control-plane
   infrastructureRef:
     apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
     kind: KKCluster
-    name: {{ .Values.cluster.name }}
+    name: capi-cluster2
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: KKCluster
 metadata:
-  name: {{ .Values.cluster.name }}
+  name: capi-cluster2
   namespace: default
 spec:
   component:
@@ -46,7 +46,7 @@ spec:
 apiVersion: controlplane.cluster.x-k8s.io/v1beta1
 kind: KubeadmControlPlane
 metadata:
-  name: {{ .Values.cluster.name }}-control-plane
+  name: capi-cluster2-control-plane
   namespace: default
 spec:
   kubeadmConfigSpec:
@@ -128,14 +128,14 @@ spec:
     infrastructureRef:
       apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
       kind: KKMachineTemplate
-      name: {{ .Values.cluster.name }}-control-plane
-  replicas: {{ .Values.cluster.masterNodes }}
-  version: {{ .Values.cluster.version }}
+      name: capi-cluster2-control-plane
+  replicas: 1
+  version: v1.25.0
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: KKMachineTemplate
 metadata:
-  name: {{ .Values.cluster.name }}-control-plane
+  name: capi-cluster2-control-plane
   namespace: default
 spec:
   template:
@@ -149,11 +149,11 @@ spec:
 apiVersion: cluster.x-k8s.io/v1beta1
 kind: MachineDeployment
 metadata:
-  name: {{ .Values.cluster.name }}-md-0
+  name: capi-cluster2-md-0
   namespace: default
 spec:
-  clusterName: {{ .Values.cluster.name }}
-  replicas: {{ .Values.cluster.workerNodes }
+  clusterName: capi-cluster2
+  replicas: 0
   selector:
     matchLabels: null
   template:
@@ -162,18 +162,18 @@ spec:
         configRef:
           apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
           kind: KubeadmConfigTemplate
-          name: {{ .Values.cluster.name }}-md-0
-      clusterName: {{ .Values.cluster.name }}
+          name: capi-cluster2-md-0
+      clusterName: capi-cluster2
       infrastructureRef:
         apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
         kind: KKMachineTemplate
-        name: {{ .Values.cluster.name }}-md-0
-      version: {{ .Values.cluster.version }}
+        name: capi-cluster2-md-0
+      version: v1.25.0
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: KKMachineTemplate
 metadata:
-  name: {{ .Values.cluster.name }}-md-0
+  name: capi-cluster2-md-0
   namespace: default
 spec:
   template:
@@ -187,7 +187,7 @@ spec:
 apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
 kind: KubeadmConfigTemplate
 metadata:
-  name: {{ .Values.cluster.name }}-md-0
+  name: capi-cluster2-md-0
   namespace: default
 spec:
   template:
