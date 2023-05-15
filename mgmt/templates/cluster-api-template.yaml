@@ -153,7 +153,7 @@ metadata:
   namespace: default
 spec:
   clusterName: cluster1
-  replicas: 1
+  replicas: 0
   selector:
     matchLabels: null
   template:
