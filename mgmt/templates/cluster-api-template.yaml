@@ -33,13 +33,13 @@ spec:
     host: 10.2.0.4
   nodes:
     auth:
-      password: "%Va280141234"
-      user: alex
+      password: "PASSWORD"
+      user: USERNAME
     instances:
-    - address: 20.4.209.70
+    - address: IP1
       roles:
       - control-plane
-    - address: 20.107.108.191
+    - address: IP2
       roles:
       - worker
 ---
