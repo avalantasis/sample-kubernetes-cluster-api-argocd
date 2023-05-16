@@ -131,7 +131,7 @@ spec:
       apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
       kind: KKMachineTemplate
       name: cluster1-control-plane
-  replicas: 0
+  replicas: 1
   version: v1.25.0
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
