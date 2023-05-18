@@ -37,7 +37,7 @@ spec:
       user: alex
     instances:
     - address: 20.4.209.191
-      name: master
+      name: master2
       roles:
       - control-plane
 ---
