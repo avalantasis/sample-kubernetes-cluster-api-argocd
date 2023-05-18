@@ -36,7 +36,7 @@ spec:
       password: "%Va280141234"
       user: alex
     instances:
-    - address: 20.4.209.191
+    - address: 20.107.108.191
       name: master2
       roles:
       - control-plane
