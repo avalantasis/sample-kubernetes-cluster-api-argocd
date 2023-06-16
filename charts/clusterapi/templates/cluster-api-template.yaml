@@ -30,13 +30,13 @@ spec:
   component:
     zone: /home/ubuntu
   controlPlaneLoadBalancer:
-    host: 10.2.0.4
+    host: 10.2.0.5
   nodes:
     auth:
       password: "%Va280141234"
       user: alex
     instances:
-    - address: 20.4.209.70
+    - address: 20.107.108.191
       name: master
       roles:
       - control-plane
@@ -63,7 +63,7 @@ spec:
             - manager
             env:
             - name: address
-              value: "10.2.0.4"
+              value: "10.2.0.5"
             - name: vip_interface
               value: ""
             - name: vip_arp
@@ -167,7 +167,7 @@ spec:
         apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
         kind: KKMachineTemplate
         name: cluster1-md-0
-      version: {{ .Values.cluster.version }}
+      version: v1.25.0
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: KKMachineTemplate
