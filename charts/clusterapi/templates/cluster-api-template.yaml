@@ -2,7 +2,7 @@ apiVersion: cluster.x-k8s.io/v1beta1
 kind: Cluster
 metadata:
   name: cluster1
-  namespace: team-admin
+  namespace: default
 spec:
   clusterNetwork:
     pods:
@@ -25,7 +25,7 @@ apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: KKCluster
 metadata:
   name: cluster1
-  namespace: team-admin
+  namespace: default
 spec:
   component:
     zone: /home/ubuntu
@@ -46,7 +46,7 @@ apiVersion: controlplane.cluster.x-k8s.io/v1beta1
 kind: KubeadmControlPlane
 metadata:
   name: cluster1-control-plane
-  namespace: team-admin
+  namespace: default
 spec:
   kubeadmConfigSpec:
     files:
@@ -135,7 +135,7 @@ apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: KKMachineTemplate
 metadata:
   name: cluster1-control-plane
-  namespace: team-admin
+  namespace: default
 spec:
   template:
     spec:
@@ -149,7 +149,7 @@ apiVersion: cluster.x-k8s.io/v1beta1
 kind: MachineDeployment
 metadata:
   name: cluster1-md-0
-  namespace: team-admin
+  namespace: default
 spec:
   clusterName: cluster1
   replicas: 0
@@ -173,7 +173,7 @@ apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: KKMachineTemplate
 metadata:
   name: cluster1-md-0
-  namespace: team-admin
+  namespace: default
 spec:
   template:
     spec:
@@ -187,7 +187,7 @@ apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
 kind: KubeadmConfigTemplate
 metadata:
   name: cluster1-md-0
-  namespace: team-admin
+  namespace: default
 spec:
   template:
     spec:
