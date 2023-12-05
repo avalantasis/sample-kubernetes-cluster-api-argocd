@@ -30,13 +30,13 @@ spec:
   component:
     zone: /home/ubuntu
   controlPlaneLoadBalancer:
-    host: 10.2.0.5
+    host: 192.168.5.80
   nodes:
     auth:
       password: "1234"
       user: ubuntu
     instances:
-    - address: 192.168.5.77
+    - address: 192.168.5.80
       name: master
       roles:
       - control-plane
@@ -63,7 +63,7 @@ spec:
             - manager
             env:
             - name: address
-              value: "10.2.0.5"
+              value: "192.168.5.80"
             - name: vip_interface
               value: ""
             - name: vip_arp
