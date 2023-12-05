@@ -7,11 +7,11 @@ spec:
   clusterNetwork:
     pods:
       cidrBlocks:
-      - 10.243.0.0/16
+      - 10.247.0.0/16
     serviceDomain: cluster.local
     services:
       cidrBlocks:
-      - 10.113.0.0/16
+      - 10.117.0.0/16
   controlPlaneRef:
     apiVersion: controlplane.cluster.x-k8s.io/v1beta1
     kind: KubeadmControlPlane
@@ -33,10 +33,10 @@ spec:
     host: 10.2.0.5
   nodes:
     auth:
-      password: "%Va280141234"
-      user: alex
+      password: "1234"
+      user: ubuntu
     instances:
-    - address: 20.107.108.191
+    - address: 192.168.5.77
       name: master
       roles:
       - control-plane
